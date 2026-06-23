@@ -1,0 +1,43 @@
+# Syntax Coloring Map for SparkFun STCC4 Arduino Library
+
+# Datatypes / Classes (KEYWORD1)
+SfeSTCC4ArdI2C	KEYWORD1
+sfDevSTCC4	KEYWORD1
+
+# Methods and Functions (KEYWORD2)
+begin	KEYWORD2
+isConnected	KEYWORD2
+reset	KEYWORD2
+startContinuousMeasurement	KEYWORD2
+stopContinuousMeasurement	KEYWORD2
+measureSingleShot	KEYWORD2
+readMeasurement	KEYWORD2
+getCO2	KEYWORD2
+getHumidity	KEYWORD2
+getTemperature	KEYWORD2
+getTemperatureF	KEYWORD2
+getStatus	KEYWORD2
+isTestingModeEnabled	KEYWORD2
+getHumidityRaw	KEYWORD2
+getTemperatureRaw	KEYWORD2
+setRHTCompensation	KEYWORD2
+setPressureCompensation	KEYWORD2
+enterSleepMode	KEYWORD2
+exitSleepMode	KEYWORD2
+performConditioning	KEYWORD2
+performForcedRecalibration	KEYWORD2
+performFactoryReset	KEYWORD2
+performSelfTest	KEYWORD2
+enableTestingMode	KEYWORD2
+disableTestingMode	KEYWORD2
+getProductId	KEYWORD2
+
+# Structures / Types (KEYWORD3)
+sfe_stcc4_self_test_t	KEYWORD3
+
+# Constants (LITERAL1)
+STCC4_SELF_TEST_OK	LITERAL1
+STCC4_SELF_TEST_VDD_OUT_OF_RANGE	LITERAL1
+STCC4_SELF_TEST_DEBUG_MASK	LITERAL1
+STCC4_SELF_TEST_SHT_NOT_CONNECTED	LITERAL1
+STCC4_SELF_TEST_MEMORY_ERROR_MASK	LITERAL1

@@ -1,0 +1,16 @@
+{
+    "name": "SparkFun STCC4 Arduino Library",
+    "version": "1.0.0",
+    "author": "SparkFun Electronics",
+    "keywords": "Sensor, CO2, carbon dioxide, air quality, STCC4, SHT40, humidity, temperature, Sensirion, Qwiic",
+    "description": "An Arduino library for the SparkFun Qwiic CO2 Sensor (STCC4), providing CO2, temperature, and humidity measurements with automatic CO2 compensation via the onboard SHT40.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/sparkfun/SparkFun_STCC4_Arduino_Library"
+    },
+    "dependencies": {
+        "sparkfun/SparkFun Toolkit": ">=1.2.0"
+    },
+    "frameworks": "arduino",
+    "platforms": "*"
+}
