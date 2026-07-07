@@ -61,36 +61,23 @@ void setup()
 
 void loop()
 {
-    unsigned long measurementStart = millis();
+    // The sensor sleeps through this interval. Keep it between 5 and 600 seconds. (If your
+    // application needs measurements on a precise schedule, account for the ~500 ms measurement
+    // time yourself - for example with millis() timing instead of a plain delay.)
+    delay(kSamplingIntervalMs);
 
-    // Wake the STCC4 from sleep mode (it confirms the sensor responded).
-    if (mySensor.exitSleepMode() != ksfTkErrOk)
-    {
-        Serial.println("Failed to wake the sensor!");
-        delay(kSamplingIntervalMs);
-        return;
-    }
+    // Wake the STCC4, trigger one measurement (blocks for the 500 ms measurement time), read it,
+    // then put the sensor back to sleep. Compensation values and the self-calibration state are
+    // retained while asleep.
+    mySensor.exitSleepMode();
+    mySensor.measureSingleShot();
+    mySensor.readMeasurement();
 
-    // Trigger one measurement (this blocks for the 500 ms measurement time) and read it.
-    if (mySensor.measureSingleShot() == ksfTkErrOk && mySensor.readMeasurement() == ksfTkErrOk)
-    {
-        Serial.print(mySensor.getCO2());
-        Serial.print("\t\t");
-        Serial.print(mySensor.getTemperature(), 1);
-        Serial.print("\t\t");
-        Serial.println(mySensor.getHumidity(), 1);
-    }
-    else
-    {
-        Serial.println("Failed to read measurement!");
-    }
+    Serial.print(mySensor.getCO2());
+    Serial.print("\t\t");
+    Serial.print(mySensor.getTemperature(), 1);
+    Serial.print("\t\t");
+    Serial.println(mySensor.getHumidity(), 1);
 
-    // Back to sleep until the next reading. Compensation values and the self-calibration
-    // state are retained while asleep.
     mySensor.enterSleepMode();
-
-    // Wait out the remainder of the sampling interval.
-    unsigned long elapsed = millis() - measurementStart;
-    if (elapsed < kSamplingIntervalMs)
-        delay(kSamplingIntervalMs - elapsed);
 }

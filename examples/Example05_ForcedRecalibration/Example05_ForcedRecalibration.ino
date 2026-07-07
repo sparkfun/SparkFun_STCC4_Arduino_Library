@@ -7,7 +7,7 @@
   against a known reference concentration.
 
   To use this sketch, place the board in air with a known CO2 concentration. Outdoor air
-  works well: it is roughly 420 ppm. Set kTargetCO2 below to your reference value. The
+  works well: it is roughly 420 ppm. Set kReferenceCO2 below to your reference value. The
   sketch then:
     1. Runs continuous measurement for 60 seconds so the reading stabilizes.
     2. Stops the measurement (the sensor must be idle for recalibration).
@@ -36,25 +36,22 @@
 
 SfeSTCC4ArdI2C mySensor;
 
-// The known CO2 concentration of the air around the sensor, in ppm. Outdoor air is ~420.
-const uint16_t kTargetCO2 = 420;
+// The known CO2 concentration of the reference air around the sensor, in ppm. Outdoor air is ~420.
+// ("Reference" rather than "target": this is the concentration the sensor is calibrated against,
+// not a value the sketch drives the air toward.)
+const uint16_t kReferenceCO2 = 420;
 
 // How long to measure before recalibrating. The datasheet requires at least 30 s.
 const uint8_t kStabilizeSeconds = 60;
 
-// Take one reading and print it. Returns true on success.
-bool readAndPrint()
+// Take one reading and print the CO2 value.
+void readAndPrint()
 {
-    if (mySensor.readMeasurement() != ksfTkErrOk)
-    {
-        Serial.println("Failed to read measurement!");
-        return false;
-    }
+    mySensor.readMeasurement();
 
     Serial.print("CO2: ");
     Serial.print(mySensor.getCO2());
     Serial.println(" ppm");
-    return true;
 }
 
 void setup()
@@ -72,23 +69,22 @@ void setup()
 
     Serial.println("STCC4 connected!");
     Serial.print("Recalibrating to ");
-    Serial.print(kTargetCO2);
+    Serial.print(kReferenceCO2);
     Serial.println(" ppm. Keep the sensor in your reference air for the whole procedure.");
     Serial.println();
 
     // Step 1: measure for a while so the sensor output stabilizes in the reference air.
-    if (mySensor.startContinuousMeasurement() != ksfTkErrOk)
-    {
-        Serial.println("Failed to start measurement. Halting.");
-        while (1)
-            ;
-    }
+    mySensor.startContinuousMeasurement();
 
     Serial.println("Stabilizing...");
     delay(1000);
 
     for (uint8_t i = 0; i < kStabilizeSeconds; i++)
     {
+        // Show how long is left so it is clear the sketch is still working.
+        Serial.print("Seconds remaining for stabilization: ");
+        Serial.println(kStabilizeSeconds - i);
+
         readAndPrint();
         delay(1000);
     }
@@ -99,12 +95,7 @@ void setup()
 
     // Step 3: recalibrate. The sensor reports the correction it applied to its output.
     int16_t frcCorrection = 0;
-    if (mySensor.performForcedRecalibration(kTargetCO2, frcCorrection) != ksfTkErrOk)
-    {
-        Serial.println("Forced recalibration FAILED. Make sure the sensor measured for at");
-        Serial.println("least 30 seconds before recalibrating, then try again.");
-        return;
-    }
+    mySensor.performForcedRecalibration(kReferenceCO2, frcCorrection);
 
     Serial.print("Forced recalibration applied. Correction: ");
     Serial.print(frcCorrection);
@@ -112,12 +103,7 @@ void setup()
     Serial.println();
 
     // Step 4: back to normal operation - watch the corrected output.
-    if (mySensor.startContinuousMeasurement() != ksfTkErrOk)
-    {
-        Serial.println("Failed to restart measurement. Halting.");
-        while (1)
-            ;
-    }
+    mySensor.startContinuousMeasurement();
 
     delay(1000);
 }

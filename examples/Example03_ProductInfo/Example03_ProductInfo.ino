@@ -57,11 +57,7 @@ void setup()
     // Read the product ID and unique serial number.
     uint32_t productId = 0;
     uint64_t serialNumber = 0;
-    if (mySensor.getProductId(productId, serialNumber) != ksfTkErrOk)
-    {
-        Serial.println("Failed to read the product ID!");
-        return;
-    }
+    mySensor.getProductId(productId, serialNumber);
 
     Serial.print("Product ID: 0x");
     printHexPadded(productId, 8);

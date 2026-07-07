@@ -54,12 +54,7 @@ void setup()
     Serial.println("STCC4 connected!");
 
     // Bring the sensor out of idle and into continuous measurement mode (1 s interval).
-    if (mySensor.startContinuousMeasurement() != ksfTkErrOk)
-    {
-        Serial.println("Failed to start measurement. Halting.");
-        while (1)
-            ;
-    }
+    mySensor.startContinuousMeasurement();
 
     // Wait for the first data point to become available.
     delay(1000);
@@ -72,18 +67,13 @@ void loop()
     // Read a fresh data point: CO2, plus the temperature and humidity the STCC4 gathered
     // from the onboard SHT40. This validates the CRC of every value before storing it, and
     // automatically retries briefly if the next data point is not quite ready yet.
-    if (mySensor.readMeasurement() == ksfTkErrOk)
-    {
-        Serial.print(mySensor.getCO2());
-        Serial.print("\t\t");
-        Serial.print(mySensor.getTemperature(), 1);
-        Serial.print("\t\t");
-        Serial.println(mySensor.getHumidity(), 1);
-    }
-    else
-    {
-        Serial.println("Failed to read measurement!");
-    }
+    mySensor.readMeasurement();
+
+    Serial.print(mySensor.getCO2());
+    Serial.print("\t\t");
+    Serial.print(mySensor.getTemperature(), 1);
+    Serial.print("\t\t");
+    Serial.println(mySensor.getHumidity(), 1);
 
     // The STCC4 produces a new data point every second.
     delay(1000);

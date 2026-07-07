@@ -33,9 +33,50 @@ sfTkError_t sfDevSTCC4::begin(sfTkIBus *theBus)
 
     // Confirm an STCC4 is actually present and responding correctly before continuing. The product
     // ID read also validates the CRC, so a successful match is strong evidence of a real STCC4.
-    if (!isConnected())
+    if (isConnected())
+        return ksfTkErrOk;
+
+    // The identity check requires the sensor to be idle, so it fails if the sensor was left in
+    // sleep mode or left measuring. Both states survive a controller reset or re-upload, because
+    // the sensor keeps power from the bus the whole time. Recover from each in turn.
+
+    // Sleep mode: send the wake-up byte and check again. exitSleepMode() re-verifies the product ID
+    // once the sensor is awake.
+    if (exitSleepMode() == ksfTkErrOk)
+        return ksfTkErrOk;
+
+    // Continuous measurement still running: stop it (this blocks for the 1.2 s execution time) and
+    // check one last time.
+    if (stopContinuousMeasurement() != ksfTkErrOk)
         return ksfTkErrBusNoResponse;
 
+    return isConnected() ? ksfTkErrOk : ksfTkErrBusNoResponse;
+}
+
+sfTkError_t sfDevSTCC4::reset(void)
+{
+    // The soft reset uses I2C-specific addressing (the general call address), so we need the I2C
+    // view of the bus. The STCC4 is an I2C-only device, so the bus is always an sfTkII2C.
+    if (_theBus == nullptr)
+        return ksfTkErrBusNotInit;
+
+    sfTkII2C *i2cBus = (sfTkII2C *)_theBus;
+
+    // Remember the configured sensor address - begin() may have selected the alternate.
+    uint8_t sensorAddress = i2cBus->address();
+
+    // Send the single-byte reset command to the I2C general call address. The command is not
+    // acknowledged by the sensor, so ignore the write result.
+    i2cBus->setAddress(kGeneralCallAddress);
+
+    uint8_t command = kCommandSoftReset;
+    (void)i2cBus->writeData(&command, sizeof(command));
+
+    // Restore the sensor's own address for all subsequent communication.
+    i2cBus->setAddress(sensorAddress);
+
+    // Give the sensor time to complete the reset before it is addressed again.
+    sftk_delay_ms(kSoftResetDelayMs);
     return ksfTkErrOk;
 }
 
@@ -121,7 +162,7 @@ int16_t sfDevSTCC4::getCO2(void)
 
 float sfDevSTCC4::getHumidity(void)
 {
-    float humidity = kHumidityOffset + kHumiditySlope * (float)_humidityTicks / kTicksFullScale;
+    float humidity = kHumidityOffset + kHumiditySlope * (float)_humidityTicks * kTicksFullScaleInv;
 
     // The conversion can produce values slightly outside the physical range; clamp per datasheet.
     if (humidity < 0.0f)
@@ -134,12 +175,12 @@ float sfDevSTCC4::getHumidity(void)
 
 float sfDevSTCC4::getTemperature(void)
 {
-    return kTemperatureOffsetC + kTemperatureSlopeC * (float)_temperatureTicks / kTicksFullScale;
+    return kTemperatureOffsetC + kTemperatureSlopeC * (float)_temperatureTicks * kTicksFullScaleInv;
 }
 
 float sfDevSTCC4::getTemperatureF(void)
 {
-    return kTemperatureOffsetF + kTemperatureSlopeF * (float)_temperatureTicks / kTicksFullScale;
+    return kTemperatureOffsetF + kTemperatureSlopeF * (float)_temperatureTicks * kTicksFullScaleInv;
 }
 
 uint16_t sfDevSTCC4::getStatus(void)
@@ -179,10 +220,11 @@ sfTkError_t sfDevSTCC4::setRHTCompensation(float temperature, float humidity)
     else if (humidity > 100.0f)
         humidity = 100.0f;
 
-    // Input ticks = (T + 45) * 65535 / 175 and (RH + 6) * 65535 / 125, rounded to nearest.
+    // Input ticks = (T + 45) * 65535 / 175 and (RH + 6) * 65535 / 125, rounded to nearest. The
+    // divisions are folded into the precomputed ticks-per-unit constants so this stays multiply-only.
     uint16_t args[2];
-    args[0] = (uint16_t)((temperature - kTemperatureOffsetC) * kTicksFullScale / kTemperatureSlopeC + 0.5f);
-    args[1] = (uint16_t)((humidity - kHumidityOffset) * kTicksFullScale / kHumiditySlope + 0.5f);
+    args[0] = (uint16_t)((temperature - kTemperatureOffsetC) * kTempTicksPerDegreeC + 0.5f);
+    args[1] = (uint16_t)((humidity - kHumidityOffset) * kHumidityTicksPerPercent + 0.5f);
 
     sfTkError_t rc = sendCommand(kCommandSetRHTCompensation, args, 2);
     if (rc != ksfTkErrOk)

@@ -16,7 +16,7 @@
     Sea level    | 101,300
     500          |  95,500
     1,000        |  89,900
-    1,600 (SFE!) |  83,500
+    1,564 (SFE!) |  83,900
     2,000        |  79,500
     3,000        |  70,100
 
@@ -42,9 +42,10 @@
 
 SfeSTCC4ArdI2C mySensor;
 
-// The ambient pressure at your location, in Pascals (1 hPa / mbar = 100 Pa).
-// 83,500 Pa is about right for SparkFun HQ in Boulder, Colorado (~1,600 m).
-const uint32_t kAmbientPressurePa = 83500;
+// The ambient pressure at your location, in Pascals (1 hPa / mbar = 100 Pa). Defaults to sea
+// level. For reference, SparkFun HQ in Boulder, Colorado sits at 1,564 m, where the pressure is
+// about 83,900 Pa - set kAmbientPressurePa accordingly if you are at altitude.
+const uint32_t kAmbientPressurePa = 101325;
 
 void setup()
 {
@@ -62,23 +63,13 @@ void setup()
     Serial.println("STCC4 connected!");
 
     // Tell the sensor the true ambient pressure before measuring.
-    if (mySensor.setPressureCompensation(kAmbientPressurePa) != ksfTkErrOk)
-    {
-        Serial.println("Failed to set pressure compensation. Halting.");
-        while (1)
-            ;
-    }
+    mySensor.setPressureCompensation(kAmbientPressurePa);
 
     Serial.print("Pressure compensation set to ");
     Serial.print(kAmbientPressurePa);
     Serial.println(" Pa");
 
-    if (mySensor.startContinuousMeasurement() != ksfTkErrOk)
-    {
-        Serial.println("Failed to start measurement. Halting.");
-        while (1)
-            ;
-    }
+    mySensor.startContinuousMeasurement();
 
     delay(1000);
 
@@ -87,18 +78,13 @@ void setup()
 
 void loop()
 {
-    if (mySensor.readMeasurement() == ksfTkErrOk)
-    {
-        Serial.print(mySensor.getCO2());
-        Serial.print("\t\t");
-        Serial.print(mySensor.getTemperature(), 1);
-        Serial.print("\t\t");
-        Serial.println(mySensor.getHumidity(), 1);
-    }
-    else
-    {
-        Serial.println("Failed to read measurement!");
-    }
+    mySensor.readMeasurement();
+
+    Serial.print(mySensor.getCO2());
+    Serial.print("\t\t");
+    Serial.print(mySensor.getTemperature(), 1);
+    Serial.print("\t\t");
+    Serial.println(mySensor.getHumidity(), 1);
 
     delay(1000);
 }

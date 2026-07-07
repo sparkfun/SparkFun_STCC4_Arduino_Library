@@ -56,11 +56,7 @@ void setup()
     Serial.println("Running self-test...");
 
     uint16_t result = 0;
-    if (mySensor.performSelfTest(result) != ksfTkErrOk)
-    {
-        Serial.println("Failed to run the self-test!");
-        return;
-    }
+    mySensor.performSelfTest(result);
 
     Serial.print("Self-test result: 0x");
     Serial.println(result, HEX);
@@ -68,19 +64,20 @@ void setup()
     if (result == STCC4_SELF_TEST_OK)
     {
         Serial.println("Self-test PASSED.");
-        return;
     }
+    else
+    {
+        Serial.println("Self-test FAILED:");
 
-    Serial.println("Self-test FAILED:");
-
-    if (result & STCC4_SELF_TEST_VDD_OUT_OF_RANGE)
-        Serial.println("  - Supply voltage is out of the specified range");
-    if (result & STCC4_SELF_TEST_DEBUG_MASK)
-        Serial.println("  - Debug flags set; contact Sensirion for support");
-    if (result & STCC4_SELF_TEST_SHT_NOT_CONNECTED)
-        Serial.println("  - The STCC4 cannot see the SHT40 on its sensor interface pins");
-    if (result & STCC4_SELF_TEST_MEMORY_ERROR_MASK)
-        Serial.println("  - Memory error: soft reset the sensor, then power cycle if it persists");
+        if (result & STCC4_SELF_TEST_VDD_OUT_OF_RANGE)
+            Serial.println("  - Supply voltage is out of the specified range");
+        if (result & STCC4_SELF_TEST_DEBUG_MASK)
+            Serial.println("  - Debug flags set; contact Sensirion for support");
+        if (result & STCC4_SELF_TEST_SHT_NOT_CONNECTED)
+            Serial.println("  - The STCC4 cannot see the SHT40 on its sensor interface pins");
+        if (result & STCC4_SELF_TEST_MEMORY_ERROR_MASK)
+            Serial.println("  - Memory error: soft reset the sensor, then power cycle if it persists");
+    }
 }
 
 void loop()
