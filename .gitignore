@@ -1,0 +1,9 @@
+# Local tool settings
+.claude/
+
+# Doxygen output (built and deployed by CI)
+docs/html/
+
+# OS cruft
+.DS_Store
+Thumbs.db

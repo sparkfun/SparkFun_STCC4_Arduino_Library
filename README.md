@@ -124,7 +124,10 @@ int16_t correction = 0;
 mySensor.performForcedRecalibration(420, correction); // outdoor air ~420 ppm
 ```
 
-`performFactoryReset()` clears all recalibration and self-calibration history. After more than 3 hours without power, `performConditioning()` (a one-off, blocking 22 s routine) is recommended to speed the sensor back to full accuracy.
+`performFactoryReset()` clears all recalibration and self-calibration history. After more than 3 hours without power, `performConditioning()` is recommended to speed the sensor back to full accuracy.
+
+> [!IMPORTANT]
+> `performConditioning()` **blocks for about 22 seconds** while the sensor runs its conditioning profile — the call does not return until it finishes. This is by far the longest-blocking call in the library, so run it once at startup (not inside `loop()`), and don't mistake the pause for a hang. Start a measurement afterwards.
 
 ## Examples
 
