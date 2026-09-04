@@ -11,7 +11,7 @@ Arduino Library for the SparkFun Qwiic CO2 Sensor (STCC4)
 [![Compile Test](https://github.com/sparkfun/SparkFun_STCC4_Arduino_Library/actions/workflows/test-compile-sketch.yml/badge.svg)](https://github.com/sparkfun/SparkFun_STCC4_Arduino_Library/actions/workflows/test-compile-sketch.yml)
 ![GitHub issues](https://img.shields.io/github/issues/sparkfun/SparkFun_STCC4_Arduino_Library)
 
-The [SparkFun Qwiic CO2 Sensor - STCC4](https://www.sparkfun.com/) puts Sensirion's miniature STCC4 CO2 sensor on a Qwiic-enabled breakout. The STCC4 measures CO2 concentration from 380 to 32,000 ppm using the thermal conductivity sensing principle, and the board pairs it with a Sensirion SHT40 wired to the STCC4's dedicated sensor interface — the STCC4 reads it autonomously to compensate its CO2 output for ambient humidity and temperature, and passes the readings along to you. One measurement, three values.
+The [SparkFun Qwiic CO2 Sensor - STCC4](https://www.sparkfun.com/) puts Sensirion's miniature STCC4 CO2 sensor on a Qwiic-enabled breakout. The STCC4 measures CO2 concentration from 380 to 32,000 ppm using the thermal conductivity sensing principle, and the board pairs it with a Sensirion SHT40 wired to the STCC4's dedicated sensor interface. The STCC4 reads it autonomously to compensate its CO2 output for ambient humidity and temperature, and passes the readings along to you.
 
 This library provides an easy-to-use interface to the board over I2C, built on the [SparkFun Toolkit](https://github.com/sparkfun/SparkFun_Toolkit). With it you can read CO2 in ppm, temperature in °C or °F, and relative humidity in %RH from a single measurement call.
 
@@ -19,7 +19,7 @@ This library provides an easy-to-use interface to the board over I2C, built on t
 
 - CO2 concentration in ppm, with CRC-validated transfers
 - Ambient temperature and relative humidity, gathered by the STCC4 from the onboard SHT40
-- Fully automatic CO2 compensation — no sketch code required
+- Fully automatic CO2 compensation
 - Continuous measurement mode (1 s interval) and low-power single shot mode
 - Sleep / wake control for battery-powered projects (~1 µA in sleep)
 - Ambient pressure compensation for operation at altitude
@@ -29,7 +29,7 @@ This library provides an easy-to-use interface to the board over I2C, built on t
 
 ## Hardware Connections
 
-The board connects over I2C using the Qwiic connector — no soldering required:
+The board connects over I2C using the Qwiic connector or PTH headers:
 
 | Device | 7-bit Address | Notes |
 | -- | -- | -- |
@@ -71,7 +71,7 @@ delay(1000); // first data point is ready after one measurement interval
 
 ### Reading CO2, Temperature, and Humidity
 
-One `readMeasurement()` call fetches everything — the CO2 value (already compensated) plus the ambient temperature and humidity the STCC4 gathered from the onboard SHT40:
+`readMeasurement()` call fetches everything: the CO2 value (already compensated) plus the ambient temperature and humidity the STCC4 gathered from the onboard SHT40:
 
 ```c++
 if (mySensor.readMeasurement() == ksfTkErrOk)
@@ -127,7 +127,7 @@ mySensor.performForcedRecalibration(420, correction); // outdoor air ~420 ppm
 `performFactoryReset()` clears all recalibration and self-calibration history. After more than 3 hours without power, `performConditioning()` is recommended to speed the sensor back to full accuracy.
 
 > [!IMPORTANT]
-> `performConditioning()` **blocks for about 22 seconds** while the sensor runs its conditioning profile — the call does not return until it finishes. This is by far the longest-blocking call in the library, so run it once at startup (not inside `loop()`), and don't mistake the pause for a hang. Start a measurement afterwards.
+> `performConditioning()` **blocks for about 22 seconds** while the sensor runs its conditioning profile. The call does not return until it finishes. This is the longest-blocking call in the library, so run it once at startup (not inside `loop()`), and don't mistake the pause for a hang. Start a measurement afterwards.
 
 ## Examples
 
