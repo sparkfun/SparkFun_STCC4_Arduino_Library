@@ -1,4 +1,4 @@
-![SparkFun Qwiic CO2 Sensor - STCC4](docs/images/gh-banner-2026-arduino-stcc4.png "SparkFun Qwiic CO2 Sensor - STCC4")
+![SparkFun Qwiic CO2 Sensor - STCC4](docs/images/Qwiic_STCC4STH40-ArduinoBanner.png "SparkFun Qwiic CO2 Sensor - STCC4")
 
 # SparkFun Qwiic CO2 Sensor - STCC4
 
